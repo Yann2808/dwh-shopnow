@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="101f844a-2ca8-47b1-a214-bd0e94bad7c0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/etl/main.py" afterDir="false" />
+    <list default="true" id="101f844a-2ca8-47b1-a214-bd0e94bad7c0" name="Changes" comment="merging">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,12 +96,25 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1762034633877</updated>
-      <workItem from="1762034635432" duration="4124000" />
+      <workItem from="1762034635432" duration="5399000" />
     </task>
+    <task id="LOCAL-00001" summary="merging">
+      <option name="closed" value="true" />
+      <created>1762060319402</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1762060319402</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="merging" />
+    <option name="LAST_COMMIT_MESSAGE" value="merging" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
