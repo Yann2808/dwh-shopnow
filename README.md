@@ -126,7 +126,8 @@ dwh-shopnow/
 
 ## 📊 Dashboard Metabase : *ShopNow – Analyse des ventes*
 
-![Dashboard Metabase](./docs/dashboard_shopnow.png)
+![Dashboard Metabase - Page 1](./docs/dashboard_shopnow_page1.png)
+![Dashboard Metabase - Page 2](./docs/dashboard_shopnow_page2.png)
 
 ### Indicateurs clés :
 - 💰 **Total des ventes par mois**  
