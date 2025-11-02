@@ -171,7 +171,7 @@ psql -h localhost -U postgres -d dw_shopnow
 **Yann SALAKO**  
 Data Analyst / Data Engineer  
 📍 Basé à Rennes  
-🔗 [LinkedIn](https://www.linkedin.com/in/yann-salako) *(à compléter avec ton profil)*
+🔗 [LinkedIn](https://www.linkedin.com/in/yann-salako)
 
 ---
 
