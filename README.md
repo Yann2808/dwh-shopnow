@@ -1,5 +1,14 @@
 # 🏪 DWH ShopNow — Entrepôt de données E-commerce (PostgreSQL + Python + Metabase)
 
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Metabase](https://img.shields.io/badge/Metabase-509EE3?style=for-the-badge&logo=metabase&logoColor=white)
+![ETL](https://img.shields.io/badge/ETL%20Pipeline-blueviolet?style=for-the-badge)
+![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+
+---
+
 ### 🚀 Projet complet de Data Engineering & Business Intelligence
 Ce projet illustre la création d’un **entrepôt de données complet** à partir de données brutes CSV issues d’une activité e-commerce.  
 L’objectif : **centraliser, transformer et analyser les ventes** à travers un pipeline **ETL automatisé** et un **dashboard interactif** sous Metabase.
@@ -21,19 +30,50 @@ L’objectif : **centraliser, transformer et analyser les ventes** à travers un
 
 ## 🧩 Architecture générale
 
-data.csv → staging.sales_raw → dwh.fact_sales + dwh.dim_*
-↓
-Metabase (Docker)
-↓
-Tableau de bord BI
+```
+data.csv  →  staging.sales_raw  →  dwh.fact_sales + dwh.dim_*
+                          ↓
+                      Metabase (Docker)
+                          ↓
+                    Tableau de bord BI
+```
 
+---
 
-- **Schéma `staging`** : stockage brut des données sources  
-- **Schéma `dwh`** : modèle en étoile avec les tables :
-  - `dim_product` — description des produits  
-  - `dim_customer` — informations clients et pays  
-  - `dim_date` — calendrier analytique  
-  - `fact_sales` — table de faits (ventes consolidées)
+## 📊 Modèle en étoile (Mermaid Diagram)
+
+```mermaid
+erDiagram
+    dim_product {
+        int product_id
+        string stockcode
+        string description
+    }
+    dim_customer {
+        int customer_id
+        string customerid
+        string country
+    }
+    dim_date {
+        int date_id
+        date invoicedate
+        int year
+        int month
+        int day
+    }
+    fact_sales {
+        string invoiceno
+        int date_id
+        int product_id
+        int customer_id
+        int quantity
+        float unitprice
+        float total_amount
+    }
+    dim_product ||--o{ fact_sales : "product_id"
+    dim_customer ||--o{ fact_sales : "customer_id"
+    dim_date ||--o{ fact_sales : "date_id"
+```
 
 ---
 
@@ -50,19 +90,20 @@ Tableau de bord BI
 
 ## 📦 Structure du projet
 
+```
 dwh-shopnow/
 │
 ├── data/
-│ └── data.csv # Fichier source brut
+│   └── data.csv                      # Fichier source brut
 │
 ├── etl_shopnow_python_pgsql/
-│ └── main.py # Script ETL complet
+│   └── main.py                       # Script ETL complet
 │
 ├── docs/
-│ └── dashboard_shopnow.png # Capture du dashboard Metabase
+│   └── dashboard_shopnow.png         # Capture du dashboard Metabase
 │
-├── README.md # Présentation du projet
-
+├── README.md                         # Présentation du projet
+```
 
 ---
 
@@ -80,18 +121,6 @@ dwh-shopnow/
 5. **Chargement final** :
    - Insertion dans `dwh.fact_sales`
    - Relations entre faits et dimensions  
-
----
-
-## 🧾 Exemple de modèle en étoile
-
-          dim_date
-             │
-             │
-dim_customer ───┼─── fact_sales ─── dim_product
-│
-└──> Mesures : quantité, prix unitaire, total
-
 
 ---
 
@@ -114,3 +143,48 @@ dim_customer ───┼─── fact_sales ─── dim_product
 ### Lancer Metabase avec Docker :
 ```bash
 docker run -d -p 3000:3000 --name metabase metabase/metabase
+```
+
+### Lancer l’ETL Python :
+```bash
+python etl_shopnow_python_pgsql/main.py
+```
+
+### Se connecter à PostgreSQL :
+```bash
+psql -h localhost -U postgres -d dw_shopnow
+```
+
+---
+
+## 💬 Résultats
+
+✅ Données nettoyées et historisées  
+✅ Entrepôt PostgreSQL prêt pour l’analyse  
+✅ Dashboard BI interactif et automatisé  
+✅ Processus ETL reproductible et extensible  
+
+---
+
+## 🧑‍💻 Auteur
+
+**Yann SALAKO**  
+Data Analyst / Data Engineer  
+📍 Basé à Paris  
+🔗 [LinkedIn](https://www.linkedin.com/) *(à compléter avec ton profil)*
+
+---
+
+## ⭐ Si ce projet t’a inspiré
+N’hésite pas à :
+- Mettre une **⭐️ star** sur le repo  
+- Forker pour créer ton propre DWH analytique  
+- Me contacter pour en discuter 🚀  
+
+---
+
+## 📄 License
+Ce projet est distribué sous la licence **MIT**.  
+Tu es libre de le réutiliser, le modifier et le partager à des fins d'apprentissage.
+
+---
