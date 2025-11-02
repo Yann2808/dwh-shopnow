@@ -1,0 +1,13 @@
+greenlet==3.2.4
+numpy==2.3.4
+pandas==2.3.3
+polars==1.35.1
+polars-runtime-32==1.35.1
+psycopg2-binary==2.9.11
+python-dateutil==2.9.0.post0
+pytz==2025.2
+six==1.17.0
+SQLAlchemy==2.0.44
+tqdm==4.67.1
+typing_extensions==4.15.0
+tzdata==2025.2
