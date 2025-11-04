@@ -1,11 +1,24 @@
 import pandas as pd
 # alternative à pandas
-import polars as pl
+# import polars as pl
+import os
+from urllib.parse import quote_plus
 from sqlalchemy import create_engine, text
 from tqdm import tqdm
 
+def get_engine():
+    """Crée une engine SQLAlchemy en utilisant les variables d'environnement."""
+    user = os.getenv("PG_USER")
+    password = quote_plus(os.getenv("PG_PASSWORD"))
+    host = os.getenv("PG_HOST")
+    port = os.getenv("PG_PORT")
+    database = os.getenv("PG_DATABASE")
+
+    connection_string = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+    return create_engine(connection_string)
+
 # Connexion à la base de données pgsql
-engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/dw_shopnow")
+engine = get_engine()
 
 with engine.begin() as conn:
     print("🧹 Suppression des anciens schémas ...")

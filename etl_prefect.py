@@ -1,6 +1,23 @@
 from prefect import task, flow
 import pandas as pd
 from sqlalchemy import create_engine, text
+import os
+from urllib.parse import quote_plus
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def get_engine():
+    """Crée une engine SQLAlchemy en utilisant les variables d'environnement."""
+    user = os.getenv("PG_USER")
+    password = quote_plus(os.getenv("PG_PASSWORD"))
+    host = os.getenv("PG_HOST")
+    port = os.getenv("PG_PORT")
+    database = os.getenv("PG_DATABASE")
+
+    connection_string = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{database}"
+    return create_engine(connection_string)
+
 
 # 1️ Tâche de lecture du fichier data.csv
 @task
@@ -41,8 +58,7 @@ def load_to_staging(df):
     print("📦 Chargement des données dans staging...")
 
     # Connexion à la base
-    engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/dw_shopnow")
-
+    engine = get_engine()
     # Écriture dans staging.retail_cleaned
     df.to_sql("retail_cleaned", engine, schema="staging", if_exists="replace", index=False)
 
@@ -55,7 +71,7 @@ def build_dwh():
     """Construit les tables du Data Warehouse à partir du staging."""
     print("🏗️ Construction du Data Warehouse...")
 
-    engine = create_engine("postgresql+psycopg2://postgres:@localhost:5432/dw_shopnow")
+    engine = get_engine()
 
     with engine.connect() as conn:
         # 1️⃣ Dimension Produit
