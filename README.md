@@ -1,7 +1,8 @@
-# 🏪 DWH ShopNow — Entrepôt de données E-commerce (PostgreSQL + Python + Metabase)
+# 🏪 DWH ShopNow — Entrepôt de données E-commerce (PostgreSQL + Python + Prefect + Metabase)
 
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Prefect](https://img.shields.io/badge/Prefect-070E10?style=for-the-badge&logo=prefect&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Metabase](https://img.shields.io/badge/Metabase-509EE3?style=for-the-badge&logo=metabase&logoColor=white)
 ![ETL](https://img.shields.io/badge/ETL%20Pipeline-blueviolet?style=for-the-badge)
@@ -19,6 +20,9 @@ L’objectif : **centraliser, transformer et analyser les ventes** à travers un
 
 - Concevoir une architecture **Data Warehouse** robuste et scalable  
 - Mettre en place un **pipeline ETL Python** (Extraction → Transformation → Chargement)  
+- **Orchestrer** le pipeline avec Prefect (retries, planification, alerting)  
+- **Conteneuriser** toute la stack (PostgreSQL, ETL, Metabase) avec Docker Compose  
+- **Contrôler la qualité** du DWH à chaque exécution  
 - Structurer les données selon un **modèle en étoile**  
 - Créer un **dashboard analytique** permettant de suivre les KPIs e-commerce :  
   - Chiffre d’affaires total et mensuel  
@@ -31,12 +35,25 @@ L’objectif : **centraliser, transformer et analyser les ventes** à travers un
 ## 🧩 Architecture générale
 
 ```
-data.csv  →  staging.sales_raw  →  dwh.fact_sales + dwh.dim_*
-                          ↓
-                      Metabase (Docker)
-                          ↓
-                    Tableau de bord BI
+                 ┌──────────────── Prefect flow « shopnow-etl » ────────────────┐
+data.csv  →  init_schemas → read_data → clean_data → load_to_staging → build_dwh → check_dwh
+                                                          ↓                ↓
+                                              staging.retail_cleaned   dwh.fact_sales + dwh.dim_*
+                 └──────────── on_completion / on_failure → webhook ────────────┘
+                                                                           ↓
+                                                                 Metabase (Docker)
+                                                                           ↓
+                                                                 Tableau de bord BI
 ```
+
+| Tâche | Rôle | Retries |
+|---|---|---|
+| `init_schemas` | Crée les schémas `staging` et `dwh` si besoin | 3 |
+| `read_data` | Lit le CSV brut (541 909 lignes) | — |
+| `clean_data` | Supprime nulls, quantités/prix ≤ 0, typage des dates | — |
+| `load_to_staging` | Charge `staging.retail_cleaned` (397 884 lignes) | 3 |
+| `build_dwh` | Construit les dimensions puis la table de faits (PK/FK) | 3 |
+| `check_dwh` | Vérifie 1 ligne de fait par ligne de staging et l'unicité des produits | — |
 
 ---
 
@@ -82,9 +99,10 @@ erDiagram
 | Domaine | Technologies |
 |----------|--------------|
 | **ETL / Ingestion** | Python · Pandas · SQLAlchemy |
-| **Stockage / DWH** | PostgreSQL |
-| **Visualisation / BI** | Metabase (via Docker) |
-| **DevOps / Environnement** | Docker Desktop · PostgresApp (macOS) |
+| **Orchestration** | Prefect 3 (tasks, retries, planification cron, hooks d'alerting) |
+| **Stockage / DWH** | PostgreSQL 16 (modèle en étoile, PK/FK) |
+| **Visualisation / BI** | Metabase |
+| **DevOps / Environnement** | Docker · Docker Compose · variables d'environnement (`.env`) |
 
 ---
 
@@ -96,11 +114,16 @@ dwh-shopnow/
 ├── data/
 │   └── data.csv                      # Fichier source brut
 │
-├── etl_shopnow_python_pgsql/
-│   └── main.py                       # Script ETL complet
+├── etl/
+│   └── main.py                       # Première version du script ETL (sans orchestration)
+│
+├── etl_prefect.py                    # Pipeline ETL orchestré avec Prefect
+├── Dockerfile                        # Image de l'ETL
+├── docker-compose.yml                # PostgreSQL + ETL + Metabase
+├── .env.example                      # Variables d'environnement à copier en .env
 │
 ├── docs/
-│   └── dashboard_shopnow.png         # Capture du dashboard Metabase
+│   └── dashboard_shopnow_page*.png   # Captures du dashboard Metabase
 │
 ├── README.md                         # Présentation du projet
 ```
@@ -141,37 +164,47 @@ dwh-shopnow/
 
 ## 🧰 Commandes utiles
 
-### Lancer Metabase avec Docker :
+### Lancer toute la stack avec Docker Compose :
 ```bash
-docker run -d -p 3000:3000 --name metabase metabase/metabase
+cp .env.example .env              # puis renseigner le mot de passe
+docker compose up -d postgres metabase
+docker compose run --rm etl       # exécute le flow Prefect une fois
+```
+Metabase est ensuite disponible sur http://localhost:3000 (hôte PostgreSQL : `postgres`, port `5432`).
+
+### Lancer l’ETL en local (sans Docker) :
+```bash
+pip install -r requirements.txt
+python etl_prefect.py
 ```
 
-### Lancer l’ETL Python :
-```bash
-python etl_shopnow_python_pgsql/main.py
-```
+### Planifier et alerter :
+- `SCHEDULE_CRON="0 6 * * *"` : le flow est servi par Prefect et s'exécute tous les jours à 6h
+- `ALERT_WEBHOOK_URL=<url>` : notification (Slack, Discord, Teams…) à chaque fin de run, succès ou échec
 
 ### Se connecter à PostgreSQL :
 ```bash
-psql -h localhost -U postgres -d dw_shopnow
+psql -h localhost -p 5433 -U shopnow -d dw_shopnow
 ```
 
 ---
 
 ## 💬 Résultats
 
-✅ Données nettoyées et historisées  
-✅ Entrepôt PostgreSQL prêt pour l’analyse  
-✅ Dashboard BI interactif et automatisé  
-✅ Processus ETL reproductible et extensible  
+✅ **541 909** lignes brutes → **397 884** lignes nettoyées et chargées  
+✅ Modèle en étoile : **3 665** produits · **4 338** clients · **305** jours · **397 884** faits  
+✅ Contrôle qualité automatique à chaque run (aucune ligne perdue ni dupliquée par les jointures)  
+✅ Stack entièrement conteneurisée et reproductible (`docker compose`)  
+✅ Orchestration Prefect avec retries, planification et alerting webhook  
+✅ Dashboard BI interactif sous Metabase  
 
 ---
 
 ## 🧑‍💻 Auteur
 
 **Yann SALAKO**  
-Data Analyst / Data Engineer  
-📍 Basé à Rennes  
+Data Engineer  
+📍 Basé à Angers  
 🔗 [LinkedIn](https://www.linkedin.com/in/yann-salako)
 
 ---
